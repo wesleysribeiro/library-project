@@ -8,7 +8,7 @@
 #define TEMPFILE "Temp.txt"
 
 /* Declaração dos arquivos */
-FILE *fp, *temp;
+FILE *fp;
 
 
 typedef struct{
@@ -22,20 +22,12 @@ typedef struct{
 
 void OpenFiles(){
     fp = fopen(DATAFILE, "r+b");
-    temp = fopen(TEMPFILE, "r+b");
     if(fp == NULL)
         fp = fopen(DATAFILE, "w+b");
-    if(temp == NULL)
-    	temp = fopen(TEMPFILE, "w+b");
     if(fp == NULL){
         fprintf(stdout, "ERRO: Impossivel criar arquivo\n");
         getchar();
         exit(1);
-    }
-    if(temp == NULL){
-        fprintf(stdout, "ERRO: Impossivel criar arquivo\n");
-        getchar();
-        exit(2);
     }
 }
 
@@ -96,9 +88,8 @@ void search_book(char *str, int num){
 
 
 /* Remove an struct entry from file */
-void remove_book(unsigned int n_location){
+void remove_book(unsigned int n_location, FILE *temp){
     Book_Info b;
-    FILE *Temp;
     char c;
     while(fread(&b, sizeof(b), 1, fp) == 1){
     	if(b.location != n_location)
@@ -186,10 +177,11 @@ void show_all_books(){
 
 
 int main(){
+	FILE *temp;
     int option, search_option;
 	unsigned int n_location;
     char name[SIZE];
-    OpenFiles();
+    OpenFiles();	
     printf("1 -\t Adicionar livro ao registro\n");
     printf("2 -\t Buscar livro\n");
     printf("3 -\t Remover livro do registro\n");
@@ -223,9 +215,17 @@ int main(){
             }
             break;
         case 3:
+        	temp = fopen(TEMPFILE, "r+b");
+    			if(temp == NULL)
+    				temp = fopen(TEMPFILE, "w+b");
+    			if(temp == NULL){
+        			fprintf(stdout, "ERRO: Impossivel criar arquivo\n");
+        			getchar();
+        			exit(2);
+    			}
         	printf("Digite a localizacao do livro: ");
         	scanf("%d", &n_location);
-            remove_book(n_location);
+            remove_book(n_location, temp);
             break;
         case 4:
         	printf("Digite a localizacao do livro: ");
@@ -241,7 +241,8 @@ int main(){
             printf("Digite um valor valido!!!\a\a");
     }
     getchar();
-    fclose(temp);
+    if(option == 3)
+    	fclose(temp);
     fclose(fp);    
 	remove(TEMPFILE);
     return 0;
