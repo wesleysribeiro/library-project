@@ -4,8 +4,7 @@
 #include <stdlib.h> /* Usar funcao exit, atoi */
 
 #define SIZE 200
-#define ARQUIVO "Datebase.txt"
-#define TEMP "Temp.txt"
+#define DATAFILE "Datebase.txt"
 
 /* Declaração dos arquivos */
 FILE *fp;
@@ -21,9 +20,9 @@ typedef struct{
 }Book_Info;
 
 void OpenFiles(){
-    fp = fopen(ARQUIVO, "r+b");
+    fp = fopen(DATAFILE, "r+b");
     if(fp == NULL)
-        fp = fopen(ARQUIVO, "w+b");
+        fp = fopen(DATAFILE, "w+b");
     if(fp == NULL){
         fprintf(stdout, "ERRO: Impossivel criar arquivo\n");
         getchar();
@@ -86,14 +85,31 @@ void search_book(char *str, int num){
                 }
 }
 
+
+/* Remove an struct entry from file */
 void remove_book(unsigned int n_location){
-    Book_Info b, a;
-    char c;
-    while (fread(&b, sizeof(b), 1, fp) == 1)
-    	if(b.location == n_location){	
-    		fseek(fp, sizeof(b), SEEK_CUR);
-    		fread(&a, sizeof(a), 1, fp);
+    Book_Info b;
+    int temp;
+    char c, found = '0';
+    while ((fread(&b, sizeof(b), 1, fp) == 1)){
+    	if(b.location == n_location){		
+    		found = '1';
+    		printf("Posicao %ld\n", ftell(fp));			
+    		break;
     	}
+    }
+    if(found == '1'){		
+		temp = b.location;
+		puts("Nice");
+    	while(fread(&b, sizeof(b), 1, fp) == 1){   	
+    		fseek(fp, -2*(long) sizeof(b), SEEK_CUR);   	
+			b.location = temp; //Locali = 1;		
+    		fwrite(&b, sizeof(b), 1, fp);
+    		fseek(fp, (long) sizeof(b), SEEK_CUR);
+    	}
+    }
+	else
+		printf("Nao foi possivel localizar!!\a\n");
 }
 
 
