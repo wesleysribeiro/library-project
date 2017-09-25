@@ -90,10 +90,12 @@ void search_book(char *str, int num){
 /* Remove an struct entry from file */
 void remove_book(unsigned int n_location, FILE *temp){
     Book_Info b;
-    char c;
     while(fread(&b, sizeof(b), 1, fp) == 1){
-    	if(b.location != n_location)
+    	if(b.location != n_location){
+    		if(b.location > n_location)
+    			b.location--;
     		fwrite(&b, sizeof(b), 1, temp);
+    	}
     }
     fclose(fp);
     fclose(temp);
@@ -178,7 +180,7 @@ void show_all_books(){
 
 int main(){
 	FILE *temp;
-    int option, search_option;
+    int option, search_option, remove_confirm;
 	unsigned int n_location;
     char name[SIZE];
     OpenFiles();	
@@ -225,7 +227,14 @@ int main(){
     			}
         	printf("Digite a localizacao do livro: ");
         	scanf("%d", &n_location);
-            remove_book(n_location, temp);
+			printf("Tem certeza que deseja excluir o registro (1 - Sim) (0 - Nao)? ");
+        	scanf("%d", &remove_confirm);
+        	if(remove_confirm == 1)
+            	remove_book(n_location, temp);
+            else{
+            	fclose(temp);
+            	remove(TEMPFILE);
+            }
             break;
         case 4:
         	printf("Digite a localizacao do livro: ");
@@ -241,9 +250,6 @@ int main(){
             printf("Digite um valor valido!!!\a\a");
     }
     getchar();
-    if(option == 3)
-    	fclose(temp);
     fclose(fp);    
-	remove(TEMPFILE);
     return 0;
 }
